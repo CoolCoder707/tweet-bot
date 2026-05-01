@@ -3,13 +3,13 @@ from datetime import datetime
 import requests
 
 # ========= CONFIG =========
-api_id = 33911412              # <-- apna API ID daal
-api_hash = "4acad418f87f623347a8ca83f3b168a9"  # <-- apna API HASH daal
+import os
 
-channel = "elonvitalikalerts"
+api_id = int(os.getenv("33911412"))
+api_hash = os.getenv("4acad418f87f623347a8ca83f3b168a9")
 
-BOT_TOKEN = "8790935199:AAHTjA6v2G4FHVmbgb-EnkxHLgTIyivZ1Kg"
-CHAT_ID = "7171044211"
+BOT_TOKEN = os.getenv("8790935199:AAHTjA6v2G4FHVmbgb-EnkxHLgTIyivZ1Kg")
+CHAT_ID = os.getenv("7171044211")
 # ==========================
 
 tweet_times = []
