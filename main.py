@@ -1,4 +1,4 @@
-import os
+Simport os
 import requests
 from datetime import datetime
 
@@ -40,5 +40,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-if __name__ == "__main__":
-    analyze()
