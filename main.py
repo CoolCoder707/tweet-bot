@@ -2,10 +2,13 @@ import os
 import requests
 
 # ===== GET SECRETS =====
-API_ID = os.getenv("33911412")
-API_HASH = os.getenv("4acad418f87f623347a8ca83f3b168a9")
-BOT_TOKEN = os.getenv("8790935199:AAHTjA6v2G4FHVmbgb-EnkxHLgTIyivZ1Kg")
-CHAT_ID = os.getenv("7171044211")
+- name: Run bot
+  env:
+    API_ID: ${{ secrets.API_ID }}
+    API_HASH: ${{ secrets.API_HASH }}
+    BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+    CHAT_ID: ${{ secrets.CHAT_ID }}
+  run: python main.py
 
 # ===== CHECK =====
 if not BOT_TOKEN or not CHAT_ID:
