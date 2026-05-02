@@ -1,8 +1,8 @@
 import os
 import requests
 
-BOT_TOKEN = os.getenv("4acad418f87f623347a8ca83f3b168a9")
-CHAT_ID = os.getenv("33911412")
+BOT_TOKEN = os.getenv("8790935199:AAHTjA6v2G4FHVmbgb-EnkxHLgTIyivZ1Kg")
+CHAT_ID = os.getenv("7171044211")
 
 if not BOT_TOKEN or not CHAT_ID:
     raise Exception("❌ BOT_TOKEN or CHAT_ID missing")
