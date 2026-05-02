@@ -1,81 +1,54 @@
 import os
 import requests
-import json
-from datetime import datetime, timedelta
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
-
-DATA_FILE = "data.json"
 
 def send(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
-def load_data():
-    try:
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    except:
-        return []
+def fetch_tweets():
+    url = "https://nitter.net/elonmusk/rss"
+    res = requests.get(url)
 
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f)
+    root = ET.fromstring(res.content)
 
-def fetch_messages():
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/getUpdates"
-    res = requests.get(url).json()
+    tweets = []
+    for item in root.findall(".//item"):
+        title = item.find("title").text
+        pub = item.find("pubDate").text
+        tweets.append((title, pub))
 
-    messages = []
-    for item in res.get("result", []):
-        if "message" in item and "text" in item["message"]:
-            messages.append(item["message"]["text"])
-    return messages
+    return tweets
 
-def is_elon(text):
-    text = text.lower()
-    return "elon" in text or "@elonmusk" in text
+def analyze(tweets):
+    now = datetime.utcnow()
 
-def update_counts(messages, data):
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    # last 24h count
+    count = len(tweets)
 
-    count = sum(1 for m in messages if is_elon(m))
-
-    data.append({"date": today, "count": count})
-    return data
-
-def analyze(data):
-    # last 7 days
-    last7 = data[-7:]
-    total = sum(d["count"] for d in last7)
-
-    avg = total / len(last7) if last7 else 0
-
-    prediction = int(avg * 7)
+    # simple prediction
+    prediction = count * 7
 
     msg = f"""
 📊 Elon Tweet Analysis
 
-📅 Last 7 days total: {total}
-📈 Daily avg: {avg:.2f}
+🕒 Last fetch tweets: {count}
 
-🔮 Next week prediction:
-👉 {prediction} tweets
+📈 Estimated weekly tweets:
+👉 {prediction}
 
-🧠 Strategy:
-{"High activity expected" if avg > 5 else "Normal activity"}
+🧠 Insight:
+{"High activity week" if count > 5 else "Normal activity"}
 """
     send(msg)
 
 def main():
-    data = load_data()
-    messages = fetch_messages()
-
-    data = update_counts(messages, data)
-    save_data(data)
-
-    analyze(data)
+    tweets = fetch_tweets()
+    analyze(tweets)
 
 if __name__ == "__main__":
     main()
