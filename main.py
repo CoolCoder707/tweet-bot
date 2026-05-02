@@ -1,7 +1,6 @@
 import os
 import requests
 import xml.etree.ElementTree as ET
-from datetime import datetime
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
@@ -11,43 +10,55 @@ def send(msg):
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
 def fetch_tweets():
-    url = "https://nitter.net/elonmusk/rss"
-    res = requests.get(url)
+    urls = [
+        "https://nitter.net/elonmusk/rss",
+        "https://nitter.it/elonmusk/rss"
+    ]
 
-    root = ET.fromstring(res.content)
+    for url in urls:
+        try:
+            res = requests.get(url, timeout=10)
 
-    tweets = []
-    for item in root.findall(".//item"):
-        title = item.find("title").text
-        pub = item.find("pubDate").text
-        tweets.append((title, pub))
+            if res.status_code != 200 or not res.content:
+                continue
 
-    return tweets
+            root = ET.fromstring(res.content)
+
+            tweets = []
+            for item in root.findall(".//item"):
+                title = item.find("title").text
+                tweets.append(title)
+
+            return tweets
+
+        except Exception as e:
+            continue
+
+    return []
 
 def analyze(tweets):
-    now = datetime.utcnow()
-
-    # last 24h count
     count = len(tweets)
-
-    # simple prediction
-    prediction = count * 7
 
     msg = f"""
 📊 Elon Tweet Analysis
 
-🕒 Last fetch tweets: {count}
+🐦 Recent tweets fetched: {count}
 
-📈 Estimated weekly tweets:
-👉 {prediction}
+🔮 Weekly prediction:
+👉 {count * 7}
 
 🧠 Insight:
-{"High activity week" if count > 5 else "Normal activity"}
+{"High activity" if count > 5 else "Normal"}
 """
     send(msg)
 
 def main():
     tweets = fetch_tweets()
+
+    if not tweets:
+        send("⚠️ Failed to fetch tweets (Nitter down or blocked)")
+        return
+
     analyze(tweets)
 
 if __name__ == "__main__":
