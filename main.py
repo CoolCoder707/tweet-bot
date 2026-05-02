@@ -10,31 +10,21 @@ def send(msg):
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
 def fetch_tweets():
-    urls = [
-        "https://nitter.net/elonmusk/rss",
-        "https://nitter.it/elonmusk/rss"
-    ]
+    url = "https://rsshub.app/twitter/user/elonmusk"
 
-    for url in urls:
-        try:
-            res = requests.get(url, timeout=10)
+    try:
+        res = requests.get(url, timeout=10)
+        root = ET.fromstring(res.content)
 
-            if res.status_code != 200 or not res.content:
-                continue
+        tweets = []
+        for item in root.findall(".//item"):
+            title = item.find("title").text
+            tweets.append(title)
 
-            root = ET.fromstring(res.content)
+        return tweets
 
-            tweets = []
-            for item in root.findall(".//item"):
-                title = item.find("title").text
-                tweets.append(title)
-
-            return tweets
-
-        except Exception as e:
-            continue
-
-    return []
+    except Exception as e:
+        return []
 
 def analyze(tweets):
     count = len(tweets)
@@ -42,7 +32,7 @@ def analyze(tweets):
     msg = f"""
 📊 Elon Tweet Analysis
 
-🐦 Recent tweets fetched: {count}
+🐦 Recent tweets: {count}
 
 🔮 Weekly prediction:
 👉 {count * 7}
@@ -56,7 +46,7 @@ def main():
     tweets = fetch_tweets()
 
     if not tweets:
-        send("⚠️ Failed to fetch tweets (Nitter down or blocked)")
+        send("⚠️ Failed to fetch tweets (RSS issue)")
         return
 
     analyze(tweets)
